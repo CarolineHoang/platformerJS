@@ -1,11 +1,21 @@
 /**
- * Author: Andrew Jakubowicz
- * Simple example of DOM manipulation with events.
+ * Author: Caroline Hoang
+ * Inspired by the work of Andrew Jakubowicz
+ * Basic platformer functionality with pure javascript that uses SVGs 
+ *        for images and "doors" that double as site-navigating links
 **/
 
 var screen = document.getElementById("screen");
 var player = document.getElementById("player");
 var platform = document.getElementsByClassName("platform");
+
+SpaceBar = " ";
+
+
+// var upRamp = document.querySelector("#myCanvas");
+// var URContext = upRamp.getContext("2d");
+
+
 // var platPos = [
 //                 [50,450,100,20],
 //                 [250,400,100,20],
@@ -45,7 +55,7 @@ var platPos = [
 
 var height = 500, //determines how many pixels away from the top of the screen is our baseline where the box will lie at rest/ y=0
     width = 1300, //width of screen //"9vw"
-    basePlayerHeight =63,
+    basePlayerHeight =60, //63=60(baseplayer img height)+3(extra px of hight between ground and "feet") //NOTE: I went back to 60 this time!
     playerHeight = basePlayerHeight, //actual box height ["tallness"] is determined in html; here we determine how high the base of the box is to the y=0 hight line
     //height -playerHeight = pixels between the bottom of the box and the green base line
     playerWidth = 40;
@@ -66,7 +76,8 @@ var worldData = {
     "y" : 8, //height - playerHeight
     "fallingSpeed": 0,
     "currentDir": null,
-    "jumpDisplacement": 1
+    "jumpDisplacement": 1,
+    "playerFacing":"left"
   },
   // Stores the current held keys. Can be inspected.
   "keysDown": []
@@ -87,8 +98,31 @@ update();
 var interval = setInterval((callback)=>{
   // Stuff that happens in here happens every frame.
 
-  
+  var platWidth = document.getElementById("8");
+  var rectWidth = platWidth.getBoundingClientRect(); // get the bounding rectangle
 
+// console.log( rect.width );
+// console.log( rect.height)
+  console.log("the width of element is: "+ rectWidth.width);
+  // console.log("the width of element is: "+ platWidth.width)
+  // document.getElementById(id).style.backgroundColor = "red"
+  // document.getElementById("door").style.backgroundColor = "red";
+  // console.log("player x: "+ worldData.player.x )
+  console.log("player x: "+ worldData.player.x + "  door x: "   + document.getElementById("door1").getAttribute("x") + "    width: " +(parseInt(document.getElementById("door1").getAttribute("width"))+parseInt(document.getElementById("door1").getAttribute("x"))));
+  if ((worldData.player.x <= (parseInt(document.getElementById("door1").getAttribute("width"))+parseInt(document.getElementById("door1").getAttribute("x"))))  && worldData.player.x >= (parseInt(document.getElementById("door1").getAttribute("x"))-playerWidth)   ){
+    document.getElementById("door1").style.fill='yellow'
+    if(isKeyDown(SpaceBar)){
+      window.location.href = "http://www.w3schools.com";
+    }
+  }
+  else{
+    document.getElementById("door1").style.fill='purple'
+  }
+
+  
+  if(isKeyDown(SpaceBar)){
+    document.getElementById("door1").style.fill='red'
+  }
   
 
 
@@ -116,16 +150,37 @@ var interval = setInterval((callback)=>{
     worldData.player.currentDir = "left"; //registers that you moved left last time
     //setTimeout("worldData.player.x -= speed", 2000);
     //setTimeout("alert('Boom!');", 2000);
+    // document.getElementById("player").classList.add("player-walking");
+    // document.getElementById("playerAvatar").className = '';
+    worldData.player.playerFacing="left";
+    document.getElementById("playerAvatar").classList="";
+    document.getElementById("playerAvatar").classList.add("walkLeft");
+    
+
   }
   else{
     worldData.player.currentDir = null;
+    // document.getElementById("playerAvatar").classList="";
+    // document.getElementById("playerAvatar").classList.remove("walkLeft");
+    // document.getElementById("playerAvatar").classList.add("pauseLeft");
+
   }
   if (isKeyDown("ArrowRight")){
     worldData.player.x += speed;
     worldData.player.currentDir = "right"; //registers that you moved right last time
+    // document.getElementById("player").classList.add("player-walking");
+    // document.getElementById("playerAvatar").classList.remove("walkingLeft").add("walkingRight");
+    worldData.player.playerFacing="right";
+    document.getElementById("playerAvatar").classList="";
+    document.getElementById("playerAvatar").classList.add("walkRight");
+    
   }
   else{
     worldData.player.currentDir = null;
+    // document.getElementById("playerAvatar").classList="";
+    // document.getElementById("playerAvatar").classList.remove("walkRight");
+    // document.getElementById("playerAvatar").classList.add("pauseRight");
+    // document.getElementById("playerAvatar").classList.add("pauseRight");
   }
   
    if (isKeyDown("ArrowUp" ) && !(isKeyDown("ArrowRight")) && !(isKeyDown("ArrowLeft")) ){
@@ -133,6 +188,7 @@ var interval = setInterval((callback)=>{
      //registers that you jumped STRAIGHT UP
      //playerHeight=playerHeight+5;
   }
+
 
   
   // Adding gravity
@@ -165,6 +221,19 @@ var interval = setInterval((callback)=>{
   
   if (isKeyDown("ArrowUp") && worldData.player.fallingSpeed === 0 && height - worldData.player.y === playerHeight){
     worldData.player.fallingSpeed = -8;
+    document.getElementById("player").classList.add("player-walking");
+  }
+
+  if (!isKeyDown("ArrowLeft") && !isKeyDown("ArrowRight") && !isKeyDown("ArrowUp" )) {
+    console.log ("WE SHOULD BE STANDING!!")
+    if (worldData.player.playerFacing == "left"){
+      document.getElementById("playerAvatar").classList="";
+      document.getElementById("playerAvatar").classList.add("pauseLeft");
+    }
+    else if ( worldData.player.playerFacing == "right"){
+      document.getElementById("playerAvatar").classList="";
+      document.getElementById("playerAvatar").classList.add("pauseRight");
+    }
   }
   
   // Every frame we want to update the svg.
@@ -255,6 +324,7 @@ function fireKeyAction(key, isDown){
     case "ArrowRight":
     case "ArrowUp":
     case "ArrowDown":
+    case SpaceBar:
       if (isDown) {
         // Only add the key if it's not already in the list.
         if (keysDown.indexOf(key) === -1) {
@@ -268,4 +338,9 @@ function fireKeyAction(key, isDown){
 
 function isKeyDown(keyName){
   return worldData.keysDown.indexOf(keyName) !== -1
+}
+
+/*not implemented*/
+function isKeyUp(keyName){
+  return worldData.keysup.indexOf(keyName) !== -1
 }
